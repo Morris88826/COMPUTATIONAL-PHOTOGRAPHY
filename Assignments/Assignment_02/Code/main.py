@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from helper import read_strip, circ_shift
-
+from extra import preprocess_image
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RGB Image Alignment')
@@ -21,12 +21,36 @@ if __name__ == '__main__':
     parser.add_argument('--search_range', type=int, default=20, help='Search range for alignment')
     parser.add_argument('--border', nargs="+", type=int, default=[20, 200], help='Border to crop')
     parser.add_argument('--levels', type=int, default=4, help='Number of levels in the pyramid')
+
+    # Extra credit options
+    parser.add_argument('--auto_crop', action='store_true', help='Use auto cropping')
+    parser.add_argument('--auto_contrast', action='store_true', help='Use auto contrast')
+    parser.add_argument('--auto_white_balance', action='store_true', help='Use auto white balance')
+    parser.add_argument('--better_features', action='store_true', help='Use better features for alignment')
+    parser.add_argument('--better_transformation', action='store_true', help='Use better transformation for alignment')
+
     args = parser.parse_args()
 
 
     # Setting the input output file path
     imageDir = args.input_dir
     outDir = os.path.join(args.output_dir, args.aligned_method) 
+    if args.auto_crop:
+        outDir += "_cr"
+    if args.auto_contrast:
+        outDir += "_ct"
+    if args.auto_white_balance:
+        outDir += "_wb"
+    if args.better_features:
+        outDir += "_bf"
+    if args.better_transformation:
+        outDir += "_bt"
+    
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+
+
+
 
     if args.input_image is None:
         # Get all the images in the input directory
@@ -44,16 +68,20 @@ if __name__ == '__main__':
         # Get r, g, b channels from image strip
         r, g, b = read_strip(input_image_path)
 
-        # get the hardcoded border value for the image
+        # Preprocessing the images
         border = args.border[1] if ".tif" in imageName else args.border[0]
+        r_processed = preprocess_image(r, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
+        g_processed = preprocess_image(g, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
+        b_processed = preprocess_image(b, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
+
 
         # Calculate shift
         if args.aligned_method == "task1":
-            rShift = task1.main(r, b, args.search_range, border=border)
-            gShift = task1.main(g, b, args.search_range, border=border)
+            rShift = task1.find_shift(r_processed, b_processed, args.search_range)
+            gShift = task1.find_shift(g_processed, b_processed, args.search_range)
         elif args.aligned_method == "task2":
-            rShift = task2.main(r, b, levels=args.levels, search_range=args.search_range, border=border)
-            gShift = task2.main(g, b, levels=args.levels, search_range=args.search_range, border=border)
+            rShift = task2.find_shift(r_processed, b_processed, levels=args.levels, search_range=args.search_range)
+            gShift = task2.find_shift(g_processed, b_processed, levels=args.levels, search_range=args.search_range)
         else:
             raise ValueError(f"Invalid method {args.aligned_method}")
         
@@ -66,8 +94,6 @@ if __name__ == '__main__':
         finalImage = np.stack((finalR, finalG, finalB), axis = 2)
 
         # Writing the image to the Results folder
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
         out_path = os.path.join(outDir, imageName.split('.')[0]+'.jpg')
         plt.imsave(out_path, finalImage)
 

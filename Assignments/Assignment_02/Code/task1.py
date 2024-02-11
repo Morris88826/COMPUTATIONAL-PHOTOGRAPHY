@@ -1,11 +1,6 @@
 import numpy as np
 from helper import circ_shift
 
-def main(im1, im2, search_range=20, border = 20):
-    cropped_im1 = im1[border:-border, border:-border]
-    cropped_im2 = im2[border:-border, border:-border]
-    return find_shift(cropped_im1, cropped_im2, search_range)
-
 # The main part of the code. Implement the FindShift function
 def find_shift(im1, im2, search_range = 20):
     min_ssd = np.Inf

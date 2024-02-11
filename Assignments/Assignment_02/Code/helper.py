@@ -24,3 +24,5 @@ def circ_shift(channel, shift):
     shifted = np.roll(shifted, shift[1], axis = 1)
     return shifted
 
+def crop_image(image, border):
+    return image[border:-border, border:-border]
