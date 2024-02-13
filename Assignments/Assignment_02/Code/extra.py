@@ -24,11 +24,60 @@ def find_edge(image):
     return edges
 
 # Functions for extra credits
-def auto_cropping(image):
-    plt.imshow(find_edge(image), cmap='gray')
-    plt.show()
-    raise NotImplementedError
-    return
+def auto_cropping(image, rShift, gShift):
+
+    r = image[:, :, 0]
+    g = image[:, :, 1]
+    b = image[:, :, 2]
+
+    # crop the image
+    # horizontal shift
+    if rShift[1] < 0 and gShift[1] < 0:
+        max_shift = max(abs(rShift[1]), abs(gShift[1]))
+        r = r[:, :max_shift]
+        g = g[:, :max_shift]
+        b = b[:, :max_shift]
+
+    elif rShift[1] >= 0 and gShift[1] >= 0:
+        max_shift = max(rShift[1], gShift[1])
+        r = r[:, max_shift:]
+        g = g[:, max_shift:]
+        b = b[:, max_shift:]
+    
+    elif rShift[1] >= 0 and gShift[1] < 0:
+        r = r[:, rShift[1]:gShift[1]]
+        g = g[:, rShift[1]:gShift[1]]
+        b = b[:, rShift[1]:gShift[1]]
+
+    elif rShift[1] < 0 and gShift[1] >= 0:
+        r = r[:, gShift[1]:rShift[1]]
+        g = g[:, gShift[1]:rShift[1]]
+        b = b[:, gShift[1]:rShift[1]]
+
+    # vertical shift
+    if rShift[0] < 0 and gShift[0] < 0:
+        max_shift = max(abs(rShift[0]), abs(gShift[0]))
+        r = r[:max_shift, :]
+        g = g[:max_shift, :]
+        b = b[:max_shift, :]
+
+    elif rShift[0] >= 0 and gShift[0] >= 0:
+        max_shift = max(rShift[0], gShift[0])
+        r = r[max_shift:, :]
+        g = g[max_shift:, :]
+        b = b[max_shift:, :]
+    
+    elif rShift[0] >= 0 and gShift[0] < 0:
+        r = r[rShift[0]:gShift[0], :]
+        g = g[rShift[0]:gShift[0], :]
+        b = b[rShift[0]:gShift[0], :]
+
+    elif rShift[0] < 0 and gShift[0] >= 0:
+        r = r[gShift[0]:rShift[0], :]
+        g = g[gShift[0]:rShift[0], :]
+        b = b[gShift[0]:rShift[0], :]
+
+    return np.stack((r, g, b), axis=2)
 
 def auto_contrasting(r, g, b):
     # find the minimum and maximum value of the image

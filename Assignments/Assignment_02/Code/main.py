@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from helper import read_strip, circ_shift
-from extra import preprocess_image, auto_contrasting
+from extra import preprocess_image, auto_contrasting, auto_cropping
 
 def show_preprocessed_image(r, g, b):
     fig, ax = plt.subplots(1, 3, figsize=(15, 5))
@@ -103,6 +103,9 @@ if __name__ == '__main__':
 
         # Putting together the aligned channels to form the color image
         finalImage = np.stack((finalR, finalG, finalB), axis = 2)
+
+        if args.auto_crop:
+            finalImage = auto_cropping(finalImage, rShift, gShift)
 
         # Writing the image to the Results folder
         out_path = os.path.join(outDir, imageName.split('.')[0]+'.jpg')
