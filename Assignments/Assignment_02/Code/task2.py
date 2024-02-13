@@ -2,20 +2,15 @@ import task1
 from skimage.transform import resize
 from helper import circ_shift
 
-def main(im1, im2, levels=4, search_range=20, border=20):
-    cropped_im1 = im1[border:-border, border:-border]
-    cropped_im2 = im2[border:-border, border:-border]
-    return find_shift(cropped_im1, cropped_im2, levels, search_range)
-
 # The main part of the code. Implement the FindShift function
-def find_shift(im1, im2, levels=4, search_range=20):
+def find_shift(im1, im2, search_range=20, levels=4):
     '''
     Find the shift between two images using the pyramid method
     Inputs:
      - im1: The first image
      - im2: The target image to which the first image is to be aligned
-     - levels: The number of levels in the pyramid
      - search_range: The range of the search in the minimum level of the pyramid
+     - levels: The number of levels in the pyramid
     '''
 
     # Create the Gaussian pyramid for both images

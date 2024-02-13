@@ -3,99 +3,108 @@ import os
 import tqdm
 import json
 import time
+import enum
 import glob
 import task1
 import task2
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from helper import read_strip, circ_shift
-from extra import preprocess_image, auto_contrasting, auto_cropping
+from helper import read_strip, circ_shift, crop_image
+from extra import auto_cropping, auto_contrasting, auto_white_balancing, find_edge
 
-def show_preprocessed_image(r, g, b):
-    fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-    ax[0].imshow(r, cmap='gray')
-    ax[0].set_title('Red Channel')
-    ax[1].imshow(g, cmap='gray')
-    ax[1].set_title('Green Channel')
-    ax[2].imshow(b, cmap='gray')
-    ax[2].set_title('Blue Channel')
-    plt.show()
-    raise NotImplementedError
-    return
+class ExtraCreditOptions(enum.Enum):
+    NONE = 0
+    AUTO_CROP = 1
+    AUTO_CONTRAST = 2
+    AUTO_WHITE_BALANCE = 3
+    BETTER_FEATURES = 4
+    BETTER_TRANSFORMATION = 5
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RGB Image Alignment')
-    parser.add_argument('-a', '--aligned_method', type=str, default="task1", help='Method to use for alignment')
     parser.add_argument('-i', '--input_image', default=None, help='Input image name')
     parser.add_argument('--input_dir', default='../Images', help='Input image directory')
     parser.add_argument('--output_dir', default='../Results', help='Output image directory')
-    parser.add_argument('--search_range', type=int, default=20, help='Search range for alignment')
     parser.add_argument('--border', nargs="+", type=int, default=[20, 200], help='Border to crop')
+    parser.add_argument('--search_range', type=int, default=20, help='Search range for alignment')
     parser.add_argument('--levels', type=int, default=4, help='Number of levels in the pyramid')
+    parser.add_argument('--extra', type=int, default=0, help='Extra credit option: 0 for none, 1 for auto crop, 2 for auto contrast, 3 for auto white balance, 4 for better features, 5 for better transformation')
 
     # Extra credit options
-    parser.add_argument('--auto_crop', action='store_true', help='Use auto cropping')
-    parser.add_argument('--auto_contrast', action='store_true', help='Use auto contrast')
-    parser.add_argument('--auto_white_balance', action='store_true', help='Use auto white balance')
-    parser.add_argument('--better_features', action='store_true', help='Use better features for alignment')
-    parser.add_argument('--better_transformation', action='store_true', help='Use better transformation for alignment')
+    # parser.add_argument('--auto_crop', action='store_true', help='Use auto cropping')
+    # parser.add_argument('--auto_contrast', action='store_true', help='Use auto contrast')
+    # parser.add_argument('--auto_white_balance', action='store_true', help='Use auto white balance')
+    # parser.add_argument('--better_features', action='store_true', help='Use better features for alignment')
+    # parser.add_argument('--better_transformation', action='store_true', help='Use better transformation for alignment')
 
     args = parser.parse_args()
 
+    extraOption = ExtraCreditOptions(args.extra)
+
     # Setting the input output file path
     imageDir = args.input_dir
-    outDir = os.path.join(args.output_dir, args.aligned_method) 
-    if args.auto_crop:
-        outDir += "_cr"
-    if args.auto_contrast:
-        outDir += "_ct"
-    if args.auto_white_balance:
-        outDir += "_wb"
-    if args.better_features:
-        outDir += "_bf"
-    if args.better_transformation:
-        outDir += "_bt"
+    outDir = args.output_dir
+
+    # Extra credit options
+    if extraOption == ExtraCreditOptions.AUTO_CROP:
+        print("Extra credit 1: Automatic cropping")
+        outDir = os.path.join(outDir, "auto_crop")
+    elif extraOption == ExtraCreditOptions.AUTO_CONTRAST:
+        print("Extra credit 2: Automatic contrasting")
+        outDir = os.path.join(outDir, "auto_contrast")
+    elif extraOption == ExtraCreditOptions.AUTO_WHITE_BALANCE:
+        print("Extra credit 3: Automatic white balance")
+        outDir = os.path.join(outDir, "auto_white_balance")
+    elif extraOption == ExtraCreditOptions.BETTER_FEATURES:
+        print("Extra credit 4: Better features for alignment")
+        outDir = os.path.join(outDir, "better_features")
+    elif extraOption == ExtraCreditOptions.BETTER_TRANSFORMATION:
+        print("Extra credit 5: Better transformation for alignment")
+        outDir = os.path.join(outDir, "better_transformation")
+    else: # No extra credit
+        outDir = os.path.join(outDir, "default")
     
     if not os.path.exists(outDir):
         os.makedirs(outDir)
 
+    # read images
     if args.input_image is None:
-        if args.aligned_method == "task1":
-            images = [os.path.basename(path) for path in glob.glob(imageDir + '/*.jpg')]
-        else:
-            images = [os.path.basename(path) for path in glob.glob(imageDir + '/*.tif')]
+        images_path = [path for path in glob.glob(imageDir + '/*')]
     else:
-        images = [os.path.basename(args.input_image)]
+        images_path = [args.input_image]
 
     metadata = {}
-    for imageName in tqdm.tqdm(images):
+    for input_image_path in tqdm.tqdm(images_path):
         start_t = time.time()
-        input_image_path = os.path.join(imageDir, imageName)
+        imageName = os.path.basename(input_image_path)
+
         # Get r, g, b channels from image strip
-        r, g, b = read_strip(input_image_path)
+        r, g, b, scalingFactor = read_strip(input_image_path)
 
-        # Preprocessing the images
-        border = args.border[1] if ".tif" in imageName else args.border[0]
-        r_processed = preprocess_image(r, border, better_features=args.better_features)
-        g_processed = preprocess_image(g, border, better_features=args.better_features)
-        b_processed = preprocess_image(b, border, better_features=args.better_features)
+        # Preprocessing the images, scalingFactor==255 -> 8-bit image, scalingFactor==65535 -> 16-bit image
+        border = args.border[1]
+        if scalingFactor == 255:
+            border = args.border[0]
 
-        if args.auto_contrast:
-            r_processed, g_processed, b_processed = auto_contrasting(r_processed, g_processed, b_processed)
-            
-        # show_preprocessed_image(r_processed, g_processed, b_processed)
+        # crop the image
+        cropped_r = crop_image(r, border)
+        cropped_g = crop_image(g, border)
+        cropped_b = crop_image(b, border)
+
+        if extraOption == ExtraCreditOptions.BETTER_FEATURES:
+            cropped_r = find_edge(cropped_r)
+            cropped_g = find_edge(cropped_g)
+            cropped_b = find_edge(cropped_b)
 
         # Calculate shift
-        if args.aligned_method == "task1":
-            rShift = task1.find_shift(r_processed, b_processed, args.search_range)
-            gShift = task1.find_shift(g_processed, b_processed, args.search_range)
-        elif args.aligned_method == "task2":
-            rShift = task2.find_shift(r_processed, b_processed, levels=args.levels, search_range=args.search_range)
-            gShift = task2.find_shift(g_processed, b_processed, levels=args.levels, search_range=args.search_range)
+        if scalingFactor == 255:
+            rShift = task1.find_shift(cropped_r, cropped_b, args.search_range)
+            gShift = task1.find_shift(cropped_g, cropped_b, args.search_range)
         else:
-            raise ValueError(f"Invalid method {args.aligned_method}")
-        
+            rShift = task2.find_shift(cropped_r, cropped_b, search_range=args.search_range, levels=args.levels)
+            gShift = task2.find_shift(cropped_g, cropped_b, search_range=args.search_range, levels=args.levels)
+
         # Shifting the images using the obtained shift values
         finalB = b
         finalG = circ_shift(g, gShift)
@@ -104,8 +113,13 @@ if __name__ == '__main__':
         # Putting together the aligned channels to form the color image
         finalImage = np.stack((finalR, finalG, finalB), axis = 2)
 
-        if args.auto_crop:
+        # Post processing the image (Extra Credit Options)
+        if extraOption == ExtraCreditOptions.AUTO_CROP:
             finalImage = auto_cropping(finalImage, rShift, gShift)
+        elif extraOption == ExtraCreditOptions.AUTO_CONTRAST:
+            finalImage = auto_contrasting(finalImage)
+        elif extraOption == ExtraCreditOptions.AUTO_WHITE_BALANCE:
+            finalImage = auto_white_balancing(finalImage)
 
         # Writing the image to the Results folder
         out_path = os.path.join(outDir, imageName.split('.')[0]+'.jpg')

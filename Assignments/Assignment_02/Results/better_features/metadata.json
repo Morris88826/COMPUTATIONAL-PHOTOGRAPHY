@@ -1,0 +1,145 @@
+{
+    "emir.tif": {
+        "time": 4.560417890548706,
+        "rShift": [
+            107,
+            40
+        ],
+        "gShift": [
+            49,
+            24
+        ]
+    },
+    "monastery.jpg": {
+        "time": 0.5551788806915283,
+        "rShift": [
+            3,
+            2
+        ],
+        "gShift": [
+            -3,
+            2
+        ]
+    },
+    "three_generations.tif": {
+        "time": 4.148732900619507,
+        "rShift": [
+            114,
+            12
+        ],
+        "gShift": [
+            56,
+            16
+        ]
+    },
+    "settlers.jpg": {
+        "time": 0.5542998313903809,
+        "rShift": [
+            14,
+            -1
+        ],
+        "gShift": [
+            7,
+            0
+        ]
+    },
+    "train.tif": {
+        "time": 4.290268182754517,
+        "rShift": [
+            85,
+            29
+        ],
+        "gShift": [
+            41,
+            0
+        ]
+    },
+    "icon.tif": {
+        "time": 4.966344833374023,
+        "rShift": [
+            90,
+            23
+        ],
+        "gShift": [
+            39,
+            16
+        ]
+    },
+    "nativity.jpg": {
+        "time": 0.6762139797210693,
+        "rShift": [
+            8,
+            0
+        ],
+        "gShift": [
+            3,
+            1
+        ]
+    },
+    "cathedral.jpg": {
+        "time": 0.5497241020202637,
+        "rShift": [
+            12,
+            3
+        ],
+        "gShift": [
+            5,
+            2
+        ]
+    },
+    "village.tif": {
+        "time": 5.042819023132324,
+        "rShift": [
+            138,
+            22
+        ],
+        "gShift": [
+            67,
+            13
+        ]
+    },
+    "self_portrait.tif": {
+        "time": 4.853370904922485,
+        "rShift": [
+            174,
+            36
+        ],
+        "gShift": [
+            77,
+            29
+        ]
+    },
+    "harvesters.tif": {
+        "time": 4.733642816543579,
+        "rShift": [
+            124,
+            14
+        ],
+        "gShift": [
+            60,
+            17
+        ]
+    },
+    "lady.tif": {
+        "time": 4.660491704940796,
+        "rShift": [
+            120,
+            13
+        ],
+        "gShift": [
+            57,
+            9
+        ]
+    },
+    "turkmen.tif": {
+        "time": 4.3972930908203125,
+        "rShift": [
+            117,
+            29
+        ],
+        "gShift": [
+            57,
+            22
+        ]
+    }
+}

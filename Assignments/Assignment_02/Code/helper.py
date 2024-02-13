@@ -10,13 +10,13 @@ def read_strip(path):
     height = int(image.shape[0] / 3)
 
     # For images with different bit depth
-    scalingFactor = 255 if (np.max(image) <= 255) else 65535
+    scalingFactor = 255 if (info.max <= 255) else 65535
     
     # Separating the glass image into R, G, and B channels
     b = image[: height, :]
     g = image[height: 2 * height, :]
     r = image[2 * height: 3 * height, :]
-    return r, g, b
+    return r, g, b, scalingFactor
 
 # circshift implementation similar to matlab
 def circ_shift(channel, shift):

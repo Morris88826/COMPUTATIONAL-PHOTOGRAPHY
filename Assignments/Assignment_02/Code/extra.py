@@ -6,7 +6,6 @@ from helper import crop_image
 
 def find_edge(image):
     # use the Canny edge detector to find the edges
-    
     # Convert to 8-bit
     image = np.clip(image * 255, 0, 255).astype(np.uint8)
 
@@ -29,7 +28,7 @@ def auto_cropping(image, rShift, gShift):
     r, g, b = image[:, :, 0], image[:, :, 1], image[:, :, 2]
 
     # first remove shifts
-        # horizontal shift
+    # horizontal shift
     if rShift[1] < 0 and gShift[1] < 0:
         max_shift = max(abs(rShift[1]), abs(gShift[1]))
         r = r[:, :max_shift]
@@ -80,7 +79,6 @@ def auto_cropping(image, rShift, gShift):
     mask_white = (r >= np.percentile(r, upper)) | (g >= np.percentile(g, upper)) | (b >= np.percentile(b, upper))
     mask_white = np.logical_not(mask_white)
 
-
     top = np.median(np.argmax(mask_white, axis=0))
     bottom = np.median(mask_white.shape[0] - np.argmax(mask_white[::-1], axis=0))
     left = np.median(np.argmax(mask_white, axis=1))
@@ -89,33 +87,35 @@ def auto_cropping(image, rShift, gShift):
     finalImage = np.stack([r, g, b], axis=2)
     finalImage = finalImage[int(top):int(bottom), int(left):int(right), :]
 
-    # import matplotlib.pyplot as plt
-    # plt.imshow(mask_white)
-    # plt.show()
-    # raise NotImplementedError
-
     return finalImage
 
-def auto_contrasting(r, g, b):
+def auto_contrasting(image):
+
+    percentiles = [5, 95]
     # find the minimum and maximum value of the image
-    min_val = min(np.min(r), np.min(g), np.min(b))
-    max_val = max(np.max(r), np.max(g), np.max(b))
+    min_val = np.percentile(image, percentiles[0])
+    max_val = np.percentile(image, percentiles[1])
 
     # normalize the image
-    r = (r - min_val) / (max_val - min_val)
-    g = (g - min_val) / (max_val - min_val)
-    b = (b - min_val) / (max_val - min_val)
+    image = (image - min_val) / (max_val - min_val)
 
     # clip the values to be between 0 and 1
-    r = np.clip(r, 0, 1)
-    g = np.clip(g, 0, 1)
-    b = np.clip(b, 0, 1)
+    image = np.clip(image, 0, 1)
 
-    return r, g, b
+    return image
 
 def auto_white_balancing(image):
-    raise NotImplementedError
-    return
+    # Calculate the illumination of the image
+    illumination = np.mean(image, axis=(0, 1))
+    neutral_gray = 0.5
+
+    # Normalize the image
+    image = image / illumination * neutral_gray
+    
+    # Clip the values to be between 0 and 1
+    image = np.clip(image, 0, 1)
+
+    return image
 
 
 def preprocess_image(image, border, better_features=False):
