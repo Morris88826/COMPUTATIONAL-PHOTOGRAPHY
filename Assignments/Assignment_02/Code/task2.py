@@ -42,7 +42,10 @@ def find_shift(im1, im2, levels=4, search_range=20):
         shift = (shift[0]*2, shift[1]*2)
         shifted_im1 = circ_shift(im1, shift)
         # Calculate the shift at the current level    
-        (d_y, d_x) = task1.find_shift(shifted_im1, im2, search_range=search_range)
+        if i == 0:
+            (d_y, d_x) = task1.find_shift(shifted_im1, im2, search_range=search_range)
+        else: 
+            (d_y, d_x) = task1.find_shift(shifted_im1, im2, search_range=2)
 
         # Update the shift
         shift = (shift[0] + d_y, shift[1] + d_x)

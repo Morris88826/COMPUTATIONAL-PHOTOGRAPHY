@@ -10,20 +10,6 @@ def find_shift(im1, im2, search_range = 20):
             # shifting the image
             shifted_im1 = circ_shift(im1, (i, j))
             
-            # # cropping the invalid border pixels
-            # if i >= 0 and j >= 0:
-            #     cropped_im1 = shifted_im1[i:, j:]
-            #     cropped_im2 = im2[i:, j:]
-            # elif i >= 0 and j < 0:
-            #     cropped_im1 = shifted_im1[i:, :j]
-            #     cropped_im2 = im2[i:, :j]
-            # elif i < 0 and j >= 0:
-            #     cropped_im1 = shifted_im1[:i, j:]
-            #     cropped_im2 = im2[:i, j:]
-            # elif i < 0 and j < 0:
-            #     cropped_im1 = shifted_im1[:i, :j]
-            #     cropped_im2 = im2[:i, :j]
-            
             # calculating the SSD
             ssd = np.sum((shifted_im1 - im2) ** 2)
 

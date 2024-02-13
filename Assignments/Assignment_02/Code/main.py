@@ -12,6 +12,18 @@ import matplotlib.pyplot as plt
 from helper import read_strip, circ_shift
 from extra import preprocess_image
 
+def show_preprocessed_image(r, g, b):
+    fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+    ax[0].imshow(r, cmap='gray')
+    ax[0].set_title('Red Channel')
+    ax[1].imshow(g, cmap='gray')
+    ax[1].set_title('Green Channel')
+    ax[2].imshow(b, cmap='gray')
+    ax[2].set_title('Blue Channel')
+    plt.show()
+    raise NotImplementedError
+    return
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RGB Image Alignment')
     parser.add_argument('-a', '--aligned_method', type=str, default="task1", help='Method to use for alignment')
@@ -31,7 +43,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
     # Setting the input output file path
     imageDir = args.input_dir
     outDir = os.path.join(args.output_dir, args.aligned_method) 
@@ -49,15 +60,11 @@ if __name__ == '__main__':
     if not os.path.exists(outDir):
         os.makedirs(outDir)
 
-
-
-
     if args.input_image is None:
-        # Get all the images in the input directory
         if args.aligned_method == "task1":
             images = [os.path.basename(path) for path in glob.glob(imageDir + '/*.jpg')]
         else:
-            images = [os.path.basename(path) for path in glob.glob(imageDir + '/*')]
+            images = [os.path.basename(path) for path in glob.glob(imageDir + '/*.tif')]
     else:
         images = [os.path.basename(args.input_image)]
 
@@ -70,10 +77,11 @@ if __name__ == '__main__':
 
         # Preprocessing the images
         border = args.border[1] if ".tif" in imageName else args.border[0]
-        r_processed = preprocess_image(r, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
-        g_processed = preprocess_image(g, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
-        b_processed = preprocess_image(b, border=border, auto_crop=args.auto_crop, auto_contrast=args.auto_contrast)
+        r_processed = preprocess_image(r, border, better_features=args.better_features)
+        g_processed = preprocess_image(g, border, better_features=args.better_features)
+        b_processed = preprocess_image(b, border, better_features=args.better_features)
 
+        show_preprocessed_image(r_processed, g_processed, b_processed)
 
         # Calculate shift
         if args.aligned_method == "task1":
