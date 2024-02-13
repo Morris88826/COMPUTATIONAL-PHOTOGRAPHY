@@ -26,12 +26,10 @@ def find_edge(image):
 # Functions for extra credits
 def auto_cropping(image, rShift, gShift):
 
-    r = image[:, :, 0]
-    g = image[:, :, 1]
-    b = image[:, :, 2]
+    r, g, b = image[:, :, 0], image[:, :, 1], image[:, :, 2]
 
-    # crop the image
-    # horizontal shift
+    # first remove shifts
+        # horizontal shift
     if rShift[1] < 0 and gShift[1] < 0:
         max_shift = max(abs(rShift[1]), abs(gShift[1]))
         r = r[:, :max_shift]
@@ -77,7 +75,26 @@ def auto_cropping(image, rShift, gShift):
         g = g[gShift[0]:rShift[0], :]
         b = b[gShift[0]:rShift[0], :]
 
-    return np.stack((r, g, b), axis=2)
+    # then remove white borders
+    upper = 95
+    mask_white = (r >= np.percentile(r, upper)) | (g >= np.percentile(g, upper)) | (b >= np.percentile(b, upper))
+    mask_white = np.logical_not(mask_white)
+
+
+    top = np.median(np.argmax(mask_white, axis=0))
+    bottom = np.median(mask_white.shape[0] - np.argmax(mask_white[::-1], axis=0))
+    left = np.median(np.argmax(mask_white, axis=1))
+    right = np.median(mask_white.shape[1] - np.argmax(mask_white[::-1], axis=1))
+
+    finalImage = np.stack([r, g, b], axis=2)
+    finalImage = finalImage[int(top):int(bottom), int(left):int(right), :]
+
+    # import matplotlib.pyplot as plt
+    # plt.imshow(mask_white)
+    # plt.show()
+    # raise NotImplementedError
+
+    return finalImage
 
 def auto_contrasting(r, g, b):
     # find the minimum and maximum value of the image
