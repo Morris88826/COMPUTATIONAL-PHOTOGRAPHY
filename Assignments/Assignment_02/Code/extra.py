@@ -30,11 +30,22 @@ def auto_cropping(image):
     raise NotImplementedError
     return
 
-def auto_contrasting(image):
-    min_val = np.min(image)
-    max_val = np.max(image)
-    image = (image - min_val)/(max_val - min_val)
-    return image
+def auto_contrasting(r, g, b):
+    # find the minimum and maximum value of the image
+    min_val = min(np.min(r), np.min(g), np.min(b))
+    max_val = max(np.max(r), np.max(g), np.max(b))
+
+    # normalize the image
+    r = (r - min_val) / (max_val - min_val)
+    g = (g - min_val) / (max_val - min_val)
+    b = (b - min_val) / (max_val - min_val)
+
+    # clip the values to be between 0 and 1
+    r = np.clip(r, 0, 1)
+    g = np.clip(g, 0, 1)
+    b = np.clip(b, 0, 1)
+
+    return r, g, b
 
 def auto_white_balancing(image):
     raise NotImplementedError

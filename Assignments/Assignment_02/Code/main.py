@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from helper import read_strip, circ_shift
-from extra import preprocess_image
+from extra import preprocess_image, auto_contrasting
 
 def show_preprocessed_image(r, g, b):
     fig, ax = plt.subplots(1, 3, figsize=(15, 5))
@@ -81,7 +81,10 @@ if __name__ == '__main__':
         g_processed = preprocess_image(g, border, better_features=args.better_features)
         b_processed = preprocess_image(b, border, better_features=args.better_features)
 
-        show_preprocessed_image(r_processed, g_processed, b_processed)
+        if args.auto_contrast:
+            r_processed, g_processed, b_processed = auto_contrasting(r_processed, g_processed, b_processed)
+            
+        # show_preprocessed_image(r_processed, g_processed, b_processed)
 
         # Calculate shift
         if args.aligned_method == "task1":
