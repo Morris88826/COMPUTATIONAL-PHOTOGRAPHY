@@ -27,7 +27,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
 
-    dpi = 1000
+    dpi = 500
     
     if taskOption == TaskOptions.TASK1:
         images_path = [os.path.join(args.result_dir, 'default' , os.path.basename(path)) for path in glob.glob(os.path.join(args.input_dir, '*.jpg'))]
