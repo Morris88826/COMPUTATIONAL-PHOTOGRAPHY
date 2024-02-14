@@ -23,12 +23,12 @@ class ExtraCreditOptions(enum.Enum):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RGB Image Alignment')
-    parser.add_argument('-i', '--input_image', default=None, help='Input image name')
+    parser.add_argument('-i', '--input_image', default=None, help='Path to the image')
     parser.add_argument('--input_dir', default='../Images', help='Input image directory')
-    parser.add_argument('--output_dir', default='../Results', help='Output image directory')
+    parser.add_argument('--output_dir', default='../Results', help='Output result directory')
     parser.add_argument('--border', nargs="+", type=int, default=[20, 200], help='Border to crop')
     parser.add_argument('--search_range', type=int, default=20, help='Search range for alignment')
-    parser.add_argument('--levels', type=int, default=4, help='Number of levels in the pyramid')
+    parser.add_argument('--levels', type=int, default=4, help='Number of levels in the image pyramid')
     parser.add_argument('--extra', type=int, default=0, help='Extra credit option: 0 for none, 1 for auto crop, 2 for auto contrast, 3 for auto white balance, 4 for better features, 5 for better transformation')
 
     # Extra credit options
@@ -46,6 +46,9 @@ if __name__ == '__main__':
     imageDir = args.input_dir
     outDir = args.output_dir
 
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+
     # Extra credit options
     if extraOption == ExtraCreditOptions.AUTO_CROP:
         print("Extra credit 1: Automatic cropping")
@@ -62,6 +65,7 @@ if __name__ == '__main__':
     elif extraOption == ExtraCreditOptions.BETTER_TRANSFORMATION:
         print("Extra credit 5: Better transformation for alignment")
         outDir = os.path.join(outDir, "better_transformation")
+        raise NotImplementedError("Better transformation is not implemented yet")
     else: # No extra credit
         outDir = os.path.join(outDir, "default")
     
@@ -119,7 +123,7 @@ if __name__ == '__main__':
         elif extraOption == ExtraCreditOptions.AUTO_CONTRAST:
             finalImage = auto_contrasting(finalImage)
         elif extraOption == ExtraCreditOptions.AUTO_WHITE_BALANCE:
-            finalImage = auto_white_balancing(finalImage)
+            finalImage = auto_white_balancing(finalImage, rShift, gShift)
 
         # Writing the image to the Results folder
         out_path = os.path.join(outDir, imageName.split('.')[0]+'.jpg')

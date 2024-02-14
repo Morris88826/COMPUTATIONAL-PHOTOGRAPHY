@@ -27,7 +27,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
 
-    dpi = 500
+    dpi = 250
     
     if taskOption == TaskOptions.TASK1:
         images_path = [os.path.join(args.result_dir, 'default' , os.path.basename(path)) for path in glob.glob(os.path.join(args.input_dir, '*.jpg'))]
@@ -46,8 +46,10 @@ if __name__ == "__main__":
             axs[i//2, i%2].set_title('{}: dR = [{},{}], dG = [{},{}]'.format(basename, rShift[0], rShift[1], gShift[0], gShift[1]))
             axs[i//2, i%2].axis('off')
         
-        # decrease the space between subplots
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.savefig(os.path.join(args.out_dir, '{}.png'.format(taskOption.name.lower())))
+        plt.close()
 
     elif taskOption == TaskOptions.TASK2:
         images_path = [os.path.join(args.result_dir, 'default' , os.path.basename(path).replace('.tif', '.jpg')) for path in glob.glob(os.path.join(args.input_dir, '*.tif'))]
@@ -62,26 +64,38 @@ if __name__ == "__main__":
         
         for i, batch in enumerate(batched_images_path):
 
-            fig, axs = plt.subplots(2, 2, figsize=(10, 10), dpi=dpi)
-            for j, path in enumerate(batch):
-                basename = os.path.basename(path).replace('.jpg', '.tif')
-                _metadata = metadata[basename]
-                rShift = _metadata['rShift']
-                gShift = _metadata['gShift']
-
-                axs[j//2, j%2].imshow(plt.imread(path))
-                axs[j//2, j%2].set_title('{}: dR = [{},{}], dG = [{},{}]'.format(basename, rShift[0], rShift[1], gShift[0], gShift[1]))
-                axs[j//2, j%2].axis('off')
-            
             if i == 2:
-                axs[0, 1].axis('off')
-                axs[1, 0].axis('off')
-                axs[1, 1].axis('off')
+                plt.figure(figsize=(5, 5), dpi=dpi)
+                for j, path in enumerate(batch):
+                    basename = os.path.basename(path).replace('.jpg', '.tif')
+                    _metadata = metadata[basename]
+                    rShift = _metadata['rShift']
+                    gShift = _metadata['gShift']
+
+                    plt.imshow(plt.imread(path))
+                    plt.axis('off')
+                    plt.title('{}: dR = [{},{}], dG = [{},{}]'.format(basename, rShift[0], rShift[1], gShift[0], gShift[1]))
+            else:
+                fig, axs = plt.subplots(2, 2, figsize=(10, 10), dpi=dpi)
+                for j, path in enumerate(batch):
+                    basename = os.path.basename(path).replace('.jpg', '.tif')
+                    _metadata = metadata[basename]
+                    rShift = _metadata['rShift']
+                    gShift = _metadata['gShift']
+
+                    axs[j//2, j%2].imshow(plt.imread(path))
+                    axs[j//2, j%2].set_title('{}: dR = [{},{}], dG = [{},{}]'.format(basename, rShift[0], rShift[1], gShift[0], gShift[1]))
+                    axs[j//2, j%2].axis('off')
+            
+
+
+            plt.tight_layout()
+            plt.subplots_adjust(wspace=0.1, hspace=0.1)
             plt.savefig(os.path.join(args.out_dir, '{}_{}.png'.format(taskOption.name.lower(), i+1)))
             plt.close()
 
     elif taskOption == TaskOptions.AUTO_CROP:
-        example_images = ["cathedral.jpg", "village.tif"] 
+        example_images = ["emir.tif", "village.tif"] 
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10), dpi=dpi)
         for row, example_image in enumerate(example_images):
@@ -96,7 +110,10 @@ if __name__ == "__main__":
             axs[row, 1].imshow(plt.imread(with_crop_path))
             axs[row, 1].set_title('{}: W/ Auto Crop'.format(example_image))
 
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.savefig(os.path.join(args.out_dir, '{}.png'.format(taskOption.name.lower())))
+        plt.close()
     
     elif taskOption == TaskOptions.AUTO_CONTRAST:
         example_images = ["monastery.jpg", "lady.tif"] 
@@ -116,10 +133,13 @@ if __name__ == "__main__":
             axs[row, 1].set_title('{}: W/ Auto Contrast'.format(example_image))
             axs[row, 1].axis('off')
         
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.savefig(os.path.join(args.out_dir, '{}.png'.format(taskOption.name.lower())))
+        plt.close()
 
     elif taskOption == TaskOptions.AUTO_WHITE_BALANCE:
-        example_images = ["settlers.jpg", "icon.tif"] 
+        example_images = ["cathedral.jpg", "icon.tif"] 
 
         fig, axs = plt.subplots(2, 2, figsize=(10, 10), dpi=dpi)
         for row, example_image in enumerate(example_images):
@@ -135,7 +155,10 @@ if __name__ == "__main__":
             axs[row, 1].set_title('{}: W/ Auto White Balance'.format(example_image))
             axs[row, 1].axis('off')
         
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.savefig(os.path.join(args.out_dir, '{}.png'.format(taskOption.name.lower())))
+        plt.close()
 
     elif taskOption == TaskOptions.BETTER_FEATURE:
         example_image = "emir.tif"
@@ -152,4 +175,7 @@ if __name__ == "__main__":
         axs[1].set_title('W/ Better Features')
         axs[1].axis('off')
 
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.savefig(os.path.join(args.out_dir, '{}.png'.format(taskOption.name.lower())))
+        plt.close()

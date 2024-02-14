@@ -87,6 +87,23 @@ def auto_cropping(image, rShift, gShift):
     finalImage = np.stack([r, g, b], axis=2)
     finalImage = finalImage[int(top):int(bottom), int(left):int(right), :]
 
+    # remove the black borders
+    lower = 5
+    r = finalImage[:, :, 0]
+    g = finalImage[:, :, 1]
+    b = finalImage[:, :, 2]
+    mask_black = (r <= np.percentile(r, lower)) | (g <= np.percentile(g, lower)) | (b <= np.percentile(b, lower))
+    mask_black = np.logical_not(mask_black)
+
+    top = np.median(np.argmax(mask_black, axis=0))
+    bottom = np.median(mask_black.shape[0] - np.argmax(mask_black[::-1], axis=0))
+    left = np.median(np.argmax(mask_black, axis=1))
+    right = np.median(mask_black.shape[1] - np.argmax(mask_black[::-1], axis=1))
+
+    finalImage = np.stack([r, g, b], axis=2)
+    finalImage = finalImage[int(top):int(bottom), int(left):int(right), :]
+
+
     return finalImage
 
 def auto_contrasting(image):
@@ -104,7 +121,11 @@ def auto_contrasting(image):
 
     return image
 
-def auto_white_balancing(image):
+def auto_white_balancing(image, rShift, gShift):
+
+    # Find the borders of the image
+    image = auto_cropping(image, rShift, gShift)
+
     # Calculate the illumination of the image
     illumination = np.mean(image, axis=(0, 1))
     neutral_gray = 0.5
