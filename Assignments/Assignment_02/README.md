@@ -4,6 +4,14 @@
 ## Overview
 In this assignment, we are required to merge the images from the Prokudin-Gorskii glass plates, which represent the Blue (B), Green (G), and Red \(R) channels of the image, arranged in a top-down order. We accomplish this by aligning the R and G channels with the B channel, identifying the alignment that minimizes the Sum of Squared Differences (SSD). Task 1 involves creating a straightforward \textbf{FindShift} function capable of handling small JPEG images. In contrast, Task 2 calls for a more efficient search method using an image pyramid. This approach significantly enhances execution time by conducting the broadest search at the lowest pyramid level, i.e. the smallest image. As we ascend to higher levels, the required search range for shifts narrows. Detailed explanations of the configuration and implementation will be provided in subsequent sections.
 
+## Prerequisites
+For this assignment, I uses these packages that are not in Python's standard library. Make sure you pip install these packages first.
+* numpy
+* matplotlib
+* opencv: For finding edges (Canny edge detector)
+* skimage: For resizing the images
+* tdqm: Progress bar for keeping track of the progress
+
 ## Get Started
 In the folder, there are three two items: the Code folder and the Report.pdf. To reproduce the result shown in the Report.pdf, please execute the following command from the root directory. Make sure you have the **Images** folder under the main directory. 
 
