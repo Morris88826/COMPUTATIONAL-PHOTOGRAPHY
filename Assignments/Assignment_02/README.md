@@ -13,7 +13,7 @@ For this assignment, I uses these packages that are not in Python's standard lib
 * tdqm: Progress bar for keeping track of the progress
 
 ## Get Started
-In the folder, there are three two items: the Code folder and the Report.pdf. To reproduce the result shown in the Report.pdf, please execute the following command from the root directory. Make sure you have the **Images** folder under the main directory. 
+In the folder, there are two main items: the Code folder and the Report.pdf. To reproduce the result shown in the Report.pdf, please execute the following command from the root directory. Make sure you have the **Images** folder under the main directory. 
 
 ```
 cd Code
