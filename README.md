@@ -1,4 +1,4 @@
-# CSCE 748 - Computer Photography 
+# CSCE 748 - Computational Photography 
 
 ## Lectures
 * [Introduction](./Slides/01_Introduction.pdf)
