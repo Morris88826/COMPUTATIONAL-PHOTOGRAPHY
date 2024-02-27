@@ -10,3 +10,4 @@
 ## Assignments
 * Assignment 1: [Pinhole Camera](./Assignments/Assignment_01)
 * Assignment 2: [Aligning RGB color images](./Assignments/Assignment_02)
+* Assignment 3: [Hybrid images and Pyramid Blending](./Assignments/Assignment_03)
