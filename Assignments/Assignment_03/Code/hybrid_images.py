@@ -153,6 +153,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     outDir = args.output_dir
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+        
     isGray = args.isGray    
 
     im1_name = os.path.basename(args.im1)
