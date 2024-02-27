@@ -68,8 +68,8 @@ def create_pyramid_blend(source, maskOriginal, target, levels, custom=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pyramid Blending')
-    parser.add_argument('--inputDir', type=str, default='../Images/', help='Input directory')
-    parser.add_argument('--outputDir', type=str, default='../Results/', help='Output directory')
+    parser.add_argument('--input_dir', type=str, default='../Images/', help='Input directory')
+    parser.add_argument('--output_dir', type=str, default='../Results/', help='Output directory')
     parser.add_argument('--levels', type=int, default=5, help='Number of levels in the pyramid')
     parser.add_argument('--id', type=int, default=1, help='Image id')
     parser.add_argument('--custom', action='store_true', help='Use custom implementation')
@@ -78,21 +78,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Setting up the input output paths
-    inputDir = args.inputDir
-    outputDir = args.outputDir
+    input_dir = args.input_dir
+    output_dir = args.output_dir
 
-    if not os.path.exists(outputDir):
-        os.makedirs(outputDir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     # main area to specify files and display blended image
     index = args.id
     # Read data and clean mask
-    source, maskOriginal, target = Read(str(index).zfill(2), inputDir)
+    source, maskOriginal, target = Read(str(index).zfill(2), input_dir)
 
     if args.custom_mask:
         maskOriginal = GetMask(source).astype(np.float32)/255.0
         # save the mask
-        plt.imsave("{}mask_{}.jpg".format(inputDir, str(index).zfill(2)), maskOriginal)
+        plt.imsave("{}mask_{}.jpg".format(input_dir, str(index).zfill(2)), maskOriginal)
 
     levels = args.levels
 
@@ -100,8 +100,8 @@ if __name__ == '__main__':
     # Implement the PyramidBlend function (Task 2)
     if args.custom:
         pyramidOutput = create_pyramid_blend(source, maskOriginal, target, levels, custom=True)
-        plt.imsave("{}custom_pyramid_{}.jpg".format(outputDir, str(index).zfill(2)), pyramidOutput)
+        plt.imsave("{}custom_pyramid_{}.jpg".format(output_dir, str(index).zfill(2)), pyramidOutput)
     else:
         pyramidOutput = create_pyramid_blend(source, maskOriginal, target, levels)
-        plt.imsave("{}pyramid_{}.jpg".format(outputDir, str(index).zfill(2)), pyramidOutput)
+        plt.imsave("{}pyramid_{}.jpg".format(output_dir, str(index).zfill(2)), pyramidOutput)
 
