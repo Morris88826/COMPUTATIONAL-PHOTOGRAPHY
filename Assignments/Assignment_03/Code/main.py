@@ -61,6 +61,11 @@ if __name__ == "__main__":
         for i in range(num_images):
             im1_name = image_pairs[i][0]
             im2_name = image_pairs[i][1]
+
+            if not os.path.exists(os.path.join(args.input_dir, image_pairs[i][0])) or not os.path.exists(os.path.join(args.input_dir, image_pairs[i][1])):
+                print("Image pair: {} and {} not found".format(image_pairs[i][0], image_pairs[i][1]))
+                continue 
+
             im1 = plt.imread(os.path.join(args.input_dir, image_pairs[i][0]))
             im2 = plt.imread(os.path.join(args.input_dir, image_pairs[i][1]))
             im1_aligned, im2_aligned = align_images(im1, im2, matching_pairs[i])
@@ -90,6 +95,10 @@ if __name__ == "__main__":
         kernel_size_2 = 6*sigmas[1] - 1 if 6*sigmas[1] % 2 == 0 else 6*sigmas[1]
         sigma_1 = sigmas[0]
         sigma_2 = sigmas[1]
+
+        if not os.path.exists(os.path.join(args.input_dir, image_pair[0])) or not os.path.exists(os.path.join(args.input_dir, image_pair[1])):
+            print("Image pair: {} and {} not found".format(image_pair[0], image_pair[1]))
+            exit(0) 
 
         im1 = plt.imread(os.path.join(args.input_dir, image_pair[0]))
         im2 = plt.imread(os.path.join(args.input_dir, image_pair[1]))
@@ -182,11 +191,17 @@ if __name__ == "__main__":
         levels = [6, 6, 8]
         # Read data and clean mask
         for (index, level) in zip(indices, levels):
+            
+            if not os.path.exists(os.path.join(args.input_dir, "source_{:02d}.jpg".format(index))) or not os.path.exists(os.path.join(args.input_dir, "target_{:02d}.jpg".format(index))) or not os.path.exists(os.path.join(args.input_dir, "mask_{:02d}.jpg".format(index))):
+                print("Image pair: source_{:02d}.jpg, target_{:02d}.jpg or mask_{:02d} not found".format(index, index, index))
+                continue
+
             source, maskOriginal, target = Read(str(index).zfill(2), input_dir+'/')
             pyramidOutput = create_pyramid_blend(source, maskOriginal, target, level)
+            naiveOutput = create_pyramid_blend(source, maskOriginal, target, 1)
             plt.imsave("{}/pyramid_{}.jpg".format(out_dir, str(index).zfill(2)), pyramidOutput)
 
-            fig, ax = plt.subplots(1, 4, figsize=(20, 8))
+            fig, ax = plt.subplots(1, 5, figsize=(24, 8))
             ax[0].imshow(source)
             ax[0].set_title('Source')
             ax[0].axis('off')
@@ -199,9 +214,13 @@ if __name__ == "__main__":
             ax[2].set_title('Target')
             ax[2].axis('off')
 
-            ax[3].imshow(pyramidOutput)
-            ax[3].set_title('Blended')
+            ax[3].imshow(naiveOutput)
+            ax[3].set_title('Naive Blended (no pyramid)')
             ax[3].axis('off')
+
+            ax[4].imshow(pyramidOutput)
+            ax[4].set_title('Pyramid Blending')
+            ax[4].axis('off')
 
             plt.tight_layout()
             plt.suptitle('Pyramid Blending: Image {}, num_levels: {}'.format(str(index).zfill(2), level))
@@ -219,7 +238,10 @@ if __name__ == "__main__":
 
 
         matching_pair = [[118.05925324675326, 186.44642857142853], [280.68506493506493, 200.60903679653674],[118.05925324675326, 186.44642857142853], [280.68506493506493, 200.60903679653674]]
-
+        
+        if not os.path.exists(os.path.join(args.input_dir, image_pair[0])) or not os.path.exists(os.path.join(args.input_dir, image_pair[1])):
+            print("Image pair: {} and {} not found".format(image_pair[0], image_pair[1]))
+            exit(0) 
         
         sigmas = [[3,3],[3,9],[3,5],[9,5]]
         params = []
