@@ -6,6 +6,8 @@
 * [Color](./Slides/03_Color.pdf)
 * [Sampling & Filtering](./Slides/04_Sampling&Filtering.pdf)
 * [Pyramids](./Slides/05_Pyramids.pdf)
+* [Image Blending](./Slides/06_ImageBlending.pdf)
+* [Point Processing](./Slides/07_PointProcessing.pdf)
 
 ## Assignments
 * Assignment 1: [Pinhole Camera](./Assignments/Assignment_01)
