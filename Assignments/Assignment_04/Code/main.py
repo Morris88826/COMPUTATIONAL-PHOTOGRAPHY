@@ -1,7 +1,10 @@
 # Import required libraries
 import os
 import numpy as np
+import argparse
 from matplotlib import pyplot as plt
+from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import spsolve
 
 # Read source, target and mask for a given id
 def Read(id, path = ""):
@@ -50,22 +53,135 @@ def AlignImages(mask, source, target, offset):
 
     return sourceLocal, maskLocal
 
+def calculateGradient(image):
+    # Calculate the gradient in x and y direction
+    gradientX = np.zeros_like(image)
+    gradientY = np.zeros_like(image)
+    gradientX[:, :-1] = image[:, 1:] - image[:, :-1]
+    gradientY[:-1, :] = image[1:, :] - image[:-1, :]
+    return gradientX, gradientY
+
 # Poisson Blend
 def PoissonBlend(source, mask, target, isMix):
+    '''
+    source: source image
+    mask: binary mask, shape (H, W, 3)
+    target: target image
+    '''
     
-    return source * mask + target * (1 - mask)
+    # padding the source, target, and mask
+    source = np.pad(source, ((1,1), (1,1), (0,0)), 'constant')
+    target = np.pad(target, ((1,1), (1,1), (0,0)), 'constant')
+    mask = np.pad(mask, ((1,1), (1,1), (0,0)), 'constant')
+
+
+    # duplicate boundary
+    source[0, :, :] = source[1, :, :]
+    source[-1, :, :] = source[-2, :, :]
+    source[:, 0, :] = source[:, 1, :]
+    source[:, -1, :] = source[:, -2, :]
+
+    target[0, :, :] = target[1, :, :]
+    target[-1, :, :] = target[-2, :, :]
+    target[:, 0, :] = target[:, 1, :]
+    target[:, -1, :] = target[:, -2, :]
+
+    H, W, _ = mask.shape
+
+    omega_indices = np.argwhere(mask[:,:,0] > 0)
+    omega = np.zeros_like(mask)
+    omega[omega_indices[:,0], omega_indices[:,1], :] = 1
+
+    # center
+    c_row = np.arange(W*H)
+    c_col = np.arange(W*H)
+    c_data = np.ones(W*H)
+    indices = omega_indices[:,0]*W + omega_indices[:,1]
+    c_data[indices] = 4
+
+    # right
+    r_row = indices
+    r_col = omega_indices[:,0]*W + omega_indices[:,1]+1
+    r_data = -1 * np.ones(len(r_row))
+
+    # left
+    l_row = indices
+    l_col = omega_indices[:,0]*W + omega_indices[:,1]-1
+    l_data = -1 * np.ones(len(l_row))
+
+    # bottom
+    b_row = indices
+    b_col = (omega_indices[:,0]+1)*W + omega_indices[:,1]
+    b_data = -1 * np.ones(len(b_row))
+
+    # top
+    t_row = indices
+    t_col = (omega_indices[:,0]-1)*W + omega_indices[:,1]
+    t_data = -1 * np.ones(len(t_row))
+
+    row = np.concatenate([c_row, r_row, l_row, b_row, t_row])
+    col = np.concatenate([c_col, r_col, l_col, b_col, t_col])
+    data = np.concatenate([c_data, r_data, l_data, b_data, t_data])
+
+    A = csr_matrix((data, (row, col)), shape=(W*H, W*H))
+    b = np.zeros((W*H, 3))
+    b[:, 0] = target[:,:,0].reshape(-1)
+    b[:, 1] = target[:,:,1].reshape(-1)
+    b[:, 2] = target[:,:,2].reshape(-1)
+
+    if isMix:
+        Gs = source[omega_indices[:,0], omega_indices[:,1]] - source[omega_indices[:,0], omega_indices[:,1]-1]
+        Gt = target[omega_indices[:,0], omega_indices[:,1]] - target[omega_indices[:,0], omega_indices[:,1]-1]
+        G1 = np.where(abs(Gs) > abs(Gt), Gs, Gt)
+
+        Gs = source[omega_indices[:,0], omega_indices[:,1]] - source[omega_indices[:,0], omega_indices[:,1]+1]
+        Gt = target[omega_indices[:,0], omega_indices[:,1]] - target[omega_indices[:,0], omega_indices[:,1]+1]
+        G2 = np.where(abs(Gs) > abs(Gt), Gs, Gt)
+
+        Gs = source[omega_indices[:,0], omega_indices[:,1]] - source[omega_indices[:,0]-1, omega_indices[:,1]]
+        Gt = target[omega_indices[:,0], omega_indices[:,1]] - target[omega_indices[:,0]-1, omega_indices[:,1]]
+        G3 = np.where(abs(Gs) > abs(Gt), Gs, Gt)
+
+        Gs = source[omega_indices[:,0], omega_indices[:,1]] - source[omega_indices[:,0]+1, omega_indices[:,1]]
+        Gt = target[omega_indices[:,0], omega_indices[:,1]] - target[omega_indices[:,0]+1, omega_indices[:,1]]
+        G4 = np.where(abs(Gs) > abs(Gt), Gs, Gt)
+
+        del_sqaure = G1 + G2 + G3 + G4
+        b[omega_indices[:,0]*W + omega_indices[:,1]] = del_sqaure
+
+    else:
+        del_sqaure_S = 4*source[omega_indices[:,0], omega_indices[:,1]] - source[omega_indices[:,0], omega_indices[:,1]+1] - source[omega_indices[:,0], omega_indices[:,1]-1] - source[omega_indices[:,0]+1, omega_indices[:,1]] - source[omega_indices[:,0]-1, omega_indices[:,1]]
+        b[omega_indices[:,0]*W + omega_indices[:,1]] = del_sqaure_S
+    
+    x = np.zeros((W*H, 3))
+    x[:, 0] = spsolve(A, b[:, 0])
+    x[:, 1] = spsolve(A, b[:, 1])
+    x[:, 2] = spsolve(A, b[:, 2])
+    
+    x = x.reshape(H, W, 3)
+    x = x[1:-1, 1:-1, :]
+
+    # Clipping the result
+    x = np.clip(x, 0, 1)
+
+    return x
+
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Poisson Blending')
+    parser.add_argument('--isMix', action='store_true', help='Use mixing gradients')
+    parser.add_argument('--inputDir', type=str, default='../Images/', help='Input directory')
+    parser.add_argument('--outputDir', type=str, default='../Results/', help='Output directory')
+    args = parser.parse_args()
+
     # Setting up the input output paths
-    inputDir = '../Images/'
-    outputDir = '../Results/'
+    inputDir = args.inputDir
+    outputDir = args.outputDir
 
     if not os.path.exists(outputDir):   
         os.makedirs(outputDir)
     
-    # False for source gradient, true for mixing gradients
-    isMix = False
-
+    isMix = args.isMix
     # Source offsets in target
     offsets = [[210, 10], [10, 28], [140, 80], [-40, 90], [60, 100], [20, 20], [-28, 88]]
 
@@ -87,9 +203,7 @@ if __name__ == '__main__':
         # Implement the PoissonBlend function
         poissonOutput = PoissonBlend(source, mask, target, isMix)
 
-        
         # Writing the result
-                
         if not isMix:
             plt.imsave("{}poisson_{}.jpg".format(outputDir, str(index+1).zfill(2)), poissonOutput)
         else:
