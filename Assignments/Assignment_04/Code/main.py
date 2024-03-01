@@ -183,7 +183,7 @@ if __name__ == '__main__':
     
     isMix = args.isMix
     # Source offsets in target
-    offsets = [[210, 10], [10, 28], [140, 80], [-40, 90], [60, 100], [20, 20], [-28, 88]]
+    offsets = [[210, 10], [10, 28], [140, 80], [-40, 90], [60, 100], [20, 20], [-28, 88], [70, -70]]
 
     # main area to specify files and display blended image
     for index in range(len(offsets)):

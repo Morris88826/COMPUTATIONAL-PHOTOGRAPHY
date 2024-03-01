@@ -1,6 +1,8 @@
+import os
+import cv2
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 
 def GetMask(image):
     ### You can add any number of points by using 
@@ -25,3 +27,21 @@ def GetMask(image):
     cv2.fillPoly(mask, roi_corners, ignore_mask_color)
 
     return mask
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Get Mask')
+    parser.add_argument('--input', type=str, default='../Images/source_08.jpg',help='Input image')
+    args = parser.parse_args()
+    image = cv2.imread(args.input)
+    mask = GetMask(image)
+    
+    # get directory and file name
+    directory = os.path.dirname(args.input)
+    filename = os.path.basename(args.input)
+
+    # save the mask
+    cv2.imwrite(os.path.join(directory, 'mask_' + filename.split('_')[-1]), mask)
+
+    cv2.imshow('Mask', mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
