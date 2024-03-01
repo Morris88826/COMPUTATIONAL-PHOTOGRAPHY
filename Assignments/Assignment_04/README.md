@@ -28,3 +28,11 @@ main.py accepts several arguments.
 
 
 There is also a report.py for generating the figures shown in the report. It uses the arguments as main.py.
+
+
+### Unit Test
+I also create a unit_test.py file for testing the implementation of Poisson Blending. One can verify it by running
+```
+cd Code
+pytest unit_test.py 
+```
