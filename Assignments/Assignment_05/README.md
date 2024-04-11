@@ -19,6 +19,8 @@ python main.py
 ```
 By running the main program directly, it will process all images with the filename 'image_X.jpg' in the Images folder. The results will be saved in the Results folder under the root directory. Additionally, for extra points, it will generate the corresponding seam carving with the mask on sample image 'image_04.jpg'.
 
+There is also a report.py for generating the figures shown in the report. This can only work after you executed main.py.
+
 
 ### Unit Test
 I also create a unit_test.py file for testing the function of finding the seam. One can verify it by running
