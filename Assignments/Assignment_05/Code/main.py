@@ -32,14 +32,21 @@ def find_seam(energy):
     M = energy.copy()
 
     for i in range(1, energy.shape[0]):
-        for j in range(energy.shape[1]):
-            if j == 0:
-                M[i, j] = min(M[i-1, j], M[i-1, j+1]) + M[i, j]
-            elif j == energy.shape[1]-1:
-                M[i, j] = min(M[i-1, j-1], M[i-1, j]) + M[i, j]
-            else:
-                M[i, j] = min(M[i-1, j-1], M[i-1, j], M[i-1, j+1]) + M[i, j]
-    
+        # non-vectorized version
+        # for j in range(energy.shape[1]):
+            # if j == 0:
+            #     M[i, j] = min(M[i-1, j], M[i-1, j+1]) + M[i, j]
+            # elif j == energy.shape[1]-1:
+            #     M[i, j] = min(M[i-1, j-1], M[i-1, j]) + M[i, j]
+            # else:
+            #     M[i, j] = min(M[i-1, j-1], M[i-1, j], M[i-1, j+1]) + M[i, j]
+
+        # vectorized version
+        prev = np.roll(M[i-1], 1)
+        prev[0] = 1e9
+        next = np.roll(M[i-1], -1)
+        next[-1] = 1e9
+        M[i] += np.minimum(prev, np.minimum(M[i-1], next))
 
     # find the optimal seam
     seam = np.zeros(M.shape[0], dtype=int)
