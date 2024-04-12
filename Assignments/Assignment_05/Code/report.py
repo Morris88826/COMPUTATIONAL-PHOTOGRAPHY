@@ -21,6 +21,7 @@ if __name__ == "__main__":
         image_number = image_name.split("_")[1].split(".")[0]
 
         result_images = glob.glob("{}/result_{}_*.jpg".format(resultsDir, image_number))
+        result_images = [result for result in result_images if "mask" not in result]
         
         im1 = plt.imread(image_path)
         im2 = plt.imread(result_images[0])

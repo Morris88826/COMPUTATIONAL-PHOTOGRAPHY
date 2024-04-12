@@ -6,6 +6,7 @@ In this assignment, we perform seam carving to resize the image. This technique 
 ## Prerequisites
 For this assignment, I use these packages that are not in Python's standard library. Make sure you pip install these packages first.
 * cv2
+* tqdm
 * numpy
 * matplotlib
 * scipy - convolve
