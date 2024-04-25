@@ -22,3 +22,4 @@
 * Assignment 3: [Hybrid images and Pyramid Blending](./Assignments/Assignment_03)
 * Assignment 4: [Poisson Blending](./Assignments/Assignment_04)
 * Assignment 5: [Seam Carving](./Assignments/Assignment_05)
+* Assignment 6: [HDR Images](./Assignments/Assignment_06)
