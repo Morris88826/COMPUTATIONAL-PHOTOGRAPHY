@@ -1,7 +1,7 @@
 # Assignment 6
 
 ## Overview
-In this assignment, we 
+In this assignment, we automatically combine multiple exposures into a single high dynamic range radiance map and then convert this radiance map to an image suitable for display through tone mapping.
 
 ## Prerequisites
 For this assignment, I use these packages that are not in Python's standard library. Make sure you pip install these packages first.
