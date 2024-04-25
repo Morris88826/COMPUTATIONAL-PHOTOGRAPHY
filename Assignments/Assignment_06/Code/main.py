@@ -6,12 +6,9 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from gsolve import gsolve
 
-# Based on code by James Tompkin
-#
-# reads in a directory and parses out the exposure values
-# files should be named like: "xxx_yyy.jpg" where
-# xxx / yyy is the exposure in seconds. 
 def ParseFiles(calibSetName, dir):
+    assert os.path.exists(os.path.join(dir, calibSetName)), 'File not found: {}'.format(os.path.join(dir, calibSetName))
+    
     imageNames = os.listdir(os.path.join(dir, calibSetName))
     
     filePaths = []
@@ -32,12 +29,17 @@ def ParseFiles(calibSetName, dir):
 def weight_func(z, zmin=0, zmax=255):
     return np.where(z <= (zmin + zmax) / 2, z - zmin, zmax - z)
 
-def calculate_crf(images, exposures, random_points, _lambda):
-    # Sample the images
-    N = random_points.shape[0]
+def calculate_crf(images, exposures, _lambda):
     P = len(images)
+    N = int(5*256/(P-1))
+    im_h, im_w, _ = images[0].shape
 
-    Z = np.zeros((N, P)).astype(np.uint8) 
+    x_points = np.random.randint(0, im_w, N)
+    y_points = np.random.randint(0, im_h, N)
+    random_points = np.vstack((x_points, y_points)).T
+
+    # Sample the images
+    Z = np.zeros((N, P, 3)).astype(np.uint8)
     for j, image in enumerate(images):
         for i in range(N):
             Z[i, j] = image[random_points[i, 1], random_points[i, 0]]
@@ -49,19 +51,35 @@ def calculate_crf(images, exposures, random_points, _lambda):
     
     # Recover the camera response function (CRF) using Debevec's optimization code (gsolve.m)
     B = np.log(exposures)
-    g, _ = gsolve(Z, B, _lambda, w)
-    
-    
-    return Z, g
+    gs = []
+    for i in range(3):
+        g, _ = gsolve(Z[:,:,i], B, _lambda, w)
+        gs.append(g)
+    return gs
+
+def calculate_radiance(images, exposures, gs):
+    P = len(images)
+    im_h, im_w, _ = images[0].shape
+    radiance = np.zeros((im_h, im_w, 3))
+
+    for c in range(3):
+        numerator = np.zeros((im_h, im_w))
+        denominator = np.zeros((im_h, im_w))
+        for p in range(P):
+            Z = images[p][:, :, c]
+            numerator += weight_func(Z) * (gs[c][Z] - np.log(exposures[p]))
+            denominator += weight_func(Z)
+
+        radiance[:, :, c] = np.exp(np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0))
+    return radiance
 
 def global_tone_mapping(E, gamma=0.3):
     E = E / E.max()
     E = np.power(E, gamma)
-    E = E * 255
-    E = E.astype(np.uint8)
+    E = (E * 255).astype(np.uint8)
     return E
 
-def local_tone_mapping(E, sd=0.5, gamma=0.5):
+def local_tone_mapping(E, sd=0.5, dR=5, gamma=0.5):
 
     # Compute the intensity (I) by averaging the color channels.
     epsilon = 1e-6
@@ -73,7 +91,7 @@ def local_tone_mapping(E, sd=0.5, gamma=0.5):
     for c in range(3):
         chrominance[:, :, c] = E[:, :, c] / I
 
-    # Compute the log intensity: L = log2(I)
+    # Compute the log intensity: L = log2(I), since log0 is undefined, we add a small epsilon to I
     L = np.log(I)/np.log(2)
 
     # Filter L with a Gaussian filter
@@ -84,7 +102,6 @@ def local_tone_mapping(E, sd=0.5, gamma=0.5):
 
     # Apply an offset and a scale to the base: B′=(B−o)∗s
     o = np.max(B)
-    dR = 5
     s = dR / (np.max(B) - np.min(B))
     B_ = (B - o) * s
 
@@ -107,6 +124,8 @@ def local_tone_mapping(E, sd=0.5, gamma=0.5):
     result = (result * 255).astype(np.uint8)
 
     return result
+
+
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate HDR image from a set of images with different exposures.')
@@ -118,43 +137,18 @@ if __name__ == "__main__":
     # Setting up the input output paths and the parameters
     inputDir = args.inputDir
     outputDir = args.outputDir
-    if not os.path.exists(outputDir):
-        os.makedirs(outputDir)
-
-    _lambda = 50
-
     calibSetName = args.calibSetName
 
-    # Parsing the input images to get the file names and corresponding exposure
-    # values
+    if not os.path.exists(outputDir):
+        os.makedirs(outputDir)
+    _lambda = 50
+
+    # Parsing the input images to get the file names and corresponding exposure values
     filePaths, exposures = ParseFiles(calibSetName, inputDir)
 
-
     """ Task 1 """
-    image = np.array(Image.open(filePaths[0]))
-    P = len(filePaths)
-    N = int(5*256/(P-1))
-    x_points = np.random.randint(0, image.shape[1], N)
-    y_points = np.random.randint(0, image.shape[0], N)
-    random_points = np.vstack((x_points, y_points)).T
-
-    # Sample the images
-    r_images = []
-    g_images = []
-    b_images = []
-    for filePath in filePaths:
-        image = Image.open(filePath)
-        image = np.array(image)
-        r_images.append(image[:, :, 0])
-        g_images.append(image[:, :, 1])
-        b_images.append(image[:, :, 2])
-    # Calculate the CRF for each channel
-    r_Z, r_g = calculate_crf(r_images, exposures, random_points, _lambda)
-    g_Z, g_g = calculate_crf(g_images, exposures, random_points, _lambda)
-    b_Z, b_g = calculate_crf(b_images, exposures, random_points, _lambda)
-    Zs = [r_Z, g_Z, b_Z]
-    gs = [r_g, g_g, b_g]
-    images = [r_images, g_images, b_images]
+    images = [np.array(Image.open(filePath)) for filePath in filePaths] # pil image is from 0 to 255
+    r_g, g_g, b_g = calculate_crf(images, exposures, _lambda)
 
     # Plot the CRF
     plt.plot(r_g, np.arange(256), c='r', label='Red', linewidth=0.5)
@@ -171,26 +165,17 @@ if __name__ == "__main__":
 
     """ Task 2 """
     # Reconstruct the radiance using the calculated CRF
-    hdr_image = np.zeros((image.shape[0], image.shape[1], 3))
-    for c in range(3):  
-        numerator = np.zeros((image.shape[0], image.shape[1]))
-        denominator = np.zeros((image.shape[0], image.shape[1]))
-        for p in range(P):
-            Z = images[c][p]
-            numerator += weight_func(Z) * (gs[c][Z] - np.log(exposures[p]))
-            denominator += weight_func(Z)
-        
-        hdr_image[:, :, c] = np.exp(np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0))
+    radiance = calculate_radiance(images, exposures, [r_g, g_g, b_g])
 
     """ Task 3 """
     # Perform both local and global tone-mapping
 
     # Global tone-mapping
-    global_hdr_image = global_tone_mapping(hdr_image, gamma=0.1)
+    global_hdr_image = global_tone_mapping(radiance, gamma=0.1)
     global_hdr_image = Image.fromarray(global_hdr_image)
     global_hdr_image.save(os.path.join(outputDir, '{}_Global.png'.format(calibSetName)))
 
     # Local tone-mapping
-    local_hdr_image = local_tone_mapping(hdr_image, sd=0.5, gamma=0.5)
+    local_hdr_image = local_tone_mapping(radiance, sd=0.5, gamma=0.5, dR=4)
     local_hdr_image = Image.fromarray(local_hdr_image)
     local_hdr_image.save(os.path.join(outputDir, '{}_Local.png'.format(calibSetName)))
