@@ -15,6 +15,9 @@
 * [ImageRetargeting](./Slides/12_ImageRetargeting.pdf)
 * [Morphing](./Slides/13_Morphing.pdf)
 * [HDR](./Slides/14_HDR.pdf)
+* [VideoTextures](./Slides/15_VideoTextures.pdf)
+* [TextureSynthesis](./Slides/16_TextureSynthesis.pdf)
+* [ImageAnalogies](./Slides/17_ImageAnalogies.pdf)
 
 ## Assignments
 * Assignment 1: [Pinhole Camera](./Assignments/Assignment_01)
