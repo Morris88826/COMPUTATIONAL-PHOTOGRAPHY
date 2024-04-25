@@ -15,9 +15,16 @@ In the folder, there are two main items: the Code folder and the Report.pdf. To 
 
 ```
 cd Code
-python main.py -c {calibSetName}
+python main.py
 ```
-, where calibSetName is the example name, i.e. 'Chapel' or 'Office'.
+main.py accepts several arguments.
+
+*  **calibSetName:** This is the name of the example name, i.e. 'Chapel' or 'Office'.
+    *  Default is 'Chapel'
+*  **inputDir:** Input image directory. 
+    *  Default is '../Images'.
+*  **outputDir:** Output result directory. 
+    *  Default is '../Results'.
 
 There is also a report.py for generating the figures shown in the report. This can only work after you executed main.py.
 
