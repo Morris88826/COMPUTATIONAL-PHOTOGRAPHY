@@ -1,5 +1,8 @@
 # CSCE 748 - Computational Photography 
 
+## Overview
+This repository contains the materials for CSCE 748 - Computational Photography at Texas A&M University (Spring 2024), taught by Professor [Nima Kalantari](https://engineering.tamu.edu/cse/profiles/Nima-Kalantari.html). The course explores the intersection of computer vision, graphics, and photography, focusing on computational techniques to enhance, analyze, and manipulate visual data. Students learn the underlying principles of photography while gaining practical experience with algorithms and techniques used in computational photography.
+
 ## Lectures
 * [Introduction](./Slides/01_Introduction.pdf)
 * [Camera](./Slides/02_Camera.pdf)
